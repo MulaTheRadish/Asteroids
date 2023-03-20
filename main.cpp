@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "spaceship.hpp"
+#include "bullet.hpp"
 
 int main()
 {
@@ -9,7 +10,9 @@ int main()
     window.setFramerateLimit(144);
 
     Spaceship spaceship;
-    spaceship.loadTexture(400, 600);
+    spaceship.loadTexture("spaceship.png", window.getSize().x / 2, window.getSize().y / 2);
+    std::vector<Bullet> bulletVector;
+    bool isFiring;
 
     while (window.isOpen()) {
         for (auto event = sf::Event{}; window.pollEvent(event);) {
@@ -17,16 +20,28 @@ int main()
                 window.close();
             }
             if (event.type == sf::Event::KeyPressed) {
-                spaceship.eventKey(event.key.code, true);
+                spaceship.userInput(event.key.code, true);
+                if (event.key.code == sf::Keyboard::Space) {
+                    isFiring = true;
+                }
             }
             if (event.type == sf::Event::KeyReleased) {
-                spaceship.eventKey(event.key.code, false);
+                spaceship.userInput(event.key.code, false);
             }
         }
-        
-        window.clear(sf::Color::Black);
-        spaceship.update();
-        spaceship.drawto(window);
+
+        window.clear();
+        if (isFiring == true) {
+            Bullet bullet(spaceship.sprite.getPosition(), spaceship.sprite.getRotation());
+            bulletVector.push_back(bullet);
+            isFiring = false;
+        }
+        for (int i = 0; i < bulletVector.size(); i++) {
+            bulletVector[i].draw(window);
+            bulletVector[i].shoot();
+        }
+        spaceship.movement();
+        spaceship.draw(window);
         window.display();
     }
 }
